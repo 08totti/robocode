@@ -1,12 +1,65 @@
-*.class
+package pre01a;
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+import java.awt.Color;
+import robocode.*;
+/**
+ *
+ * @author c011436287
+ */
+public class C0114362 extends Robot
+{
+    private double enemyAngle;
+    private double bearing;
+ 
+    @Override
+    public void run() 
+    {
+        setColors(Color.red, Color.red, Color.red);
+        setAdjustRadarForGunTurn(true); //大砲が回転するときに、レーダーが自動的に反対方向に回転するように設定
+        setAdjustGunForRobotTurn(true); //ロボットが回転するときに、大砲が自動的に反対方向に回転するように設定
+        while (true) 
+        {
+            turnRadarRight(360);
+            ahead(100);
+            turnRadarRight(360);
+            back(100);
+	}
+    }
 
-# Package Files #
-*.jar
-*.war
-*.ear
+    @Override
+    public void onScannedRobot(ScannedRobotEvent e) 
+    {
+        bearing = e.getBearing();
+        shot();
+    }
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+    @Override
+    public void onHitByBullet(HitByBulletEvent e) 
+    {
+	turnLeft(90 - bearing);
+    }
+    
+    void shot()
+    {
+        enemyAngle = bearing + getHeading();	//敵までのの絶対角度
+        //敵までの絶対角度と砲台の絶対角度から-180～180度で砲台を動かして標準をあわせる	
+        double kd = getRelAngle(enemyAngle, getGunHeading());
+        turnGunRight(kd);	
+        fire(2);	//パワー2の弾丸発射
+        
+    }
+    
+    public double getRelAngle(double gd, double hd)
+    {
+        double kd = gd - hd;
+        if (kd<-180)
+        {
+            return kd + 360;
+        }
+        else if (kd>180)    
+        {    
+            return kd - 360;
+        }
+        return kd;
+    }
+}												
